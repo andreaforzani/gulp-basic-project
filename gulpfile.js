@@ -42,11 +42,11 @@ var config = {
 
 // clean
 gulp.task('clean', function () {
-	return del([
+	return del.sync([
 		config.dest.styles,
 		config.dest.scripts,
 		config.dest.images,
-		config.dest.icons,
+		// config.dest.icons,
 		config.dest.fonts
 	]);
 });
@@ -79,12 +79,28 @@ gulp.task('styles', function () {
 		.pipe(gulpif(config.dev, reload({stream:true})));
 });
 
-gulp.task('browser-sync', ['watch'], function() {  
+gulp.task('serve', ['watch'], function() {  
 	browserSync.init(["css/*.css", "js/*.js", "*.html"], {
 		server: {
 			baseDir: "./"
-		}
+		},
+	  notify: true
 	});
+
+	// For Drupal theme development
+	// var files = [
+	//   'css/style.css',
+	//   'js/*js',
+	//   'img/**/*',
+	//   'templates/*.twig'
+ //  ];
+
+ //  //initialize browsersync
+ //  browserSync.init(files, {
+	//   //browsersync with a php server
+	//   proxy: "mysite.dev",
+	//   notify: true
+ //  });
 });
 
 gulp.task('modernizr', function() {
@@ -150,6 +166,19 @@ gulp.task('gulpicon', ['optimizeSVG'], gulpicon(iconFiles, {
 	dest: config.dest.icons
 }));
 
+gulp.task('clearcache', function() {
+	return shell.task([
+		// Drush 7 no alias
+		// 'drush cc all'
+		// Drush 8 no alias
+		// 'drush cr'
+		// Drush 7 alias
+		// 'drush7 cc all'
+		// Drush 8 alias
+		'drush8 cr'
+	]);
+});
+
 // default build task
 gulp.task('default', function () {
 
@@ -167,7 +196,7 @@ gulp.task('default', function () {
 	runSequence(tasks, function () {
 		// gulp.start('gulpicon');
 		if (config.dev) {
-			gulp.start('browser-sync');
+			gulp.start('serve');
 		}
 	});
 
