@@ -12,12 +12,14 @@ var reload = browserSync.reload;
 var runSequence = require('run-sequence');
 var sass = require('gulp-sass');
 var sourcemaps = require('gulp-sourcemaps');
-// var svgmin = require('gulp-svgmin');
 var modernizr = require('gulp-modernizr');
 var browserify = require('browserify');
 var source = require('vinyl-source-stream');
 var buffer = require('vinyl-buffer');
 var uglify = require('gulp-uglify');
+var gulpicon = require("gulpicon/tasks/gulpicon");
+var svgmin = require('gulp-svgmin');
+var merge = require('merge-stream');
 
 var config = {
 	dev: gutil.env.dev,
@@ -25,12 +27,16 @@ var config = {
 	src: {
 		styles : 'src/scss/',
 		scripts: 'src/js/',
-		images: 'src/images/'
+		images: 'src/images/',
+		icons: 'src/icons/',
+		fonts: 'src/fonts/'
 	},
 	dest: {
 		styles : 'css/',
 		scripts: 'js/',
-		images: 'images/'
+		images: 'images/',
+		icons: 'icons/',
+		fonts: 'fonts/'
 	}
 }
 
@@ -39,7 +45,9 @@ gulp.task('clean', function () {
 	return del([
 		config.dest.styles,
 		config.dest.scripts,
-		config.dest.images
+		config.dest.images,
+		config.dest.icons,
+		config.dest.fonts
 	]);
 });
 
@@ -113,6 +121,35 @@ gulp.task('watch', function () {
 	gulp.watch(config.src.images + '**/*', ['images:watch']);
 });
 
+gulp.task('fonts', function() {
+	gulp.src(config.src.fonts + "*")
+		.pipe(gulp.dest(config.dest.fonts));
+});
+
+gulp.task('optimizeSVG', function () {
+	var stream = gulp.src(config.src.icons + 'svg/*.svg')
+		.pipe(svgmin({
+			js2svg: {
+				pretty: true
+			},
+			plugins: [{
+				removeAttrs: {
+					attrs: '(width|height)'
+				}
+			}]
+		}))
+		.pipe(gulp.dest(config.dest.icons + 'svg'));
+	return stream;
+});
+
+var	iconFiles = glob.sync(config.dest.icons + 'svg/*.svg');
+gulp.task('gulpicon', ['optimizeSVG'], gulpicon(iconFiles, {
+	enhanceSVG: true,
+	defaultWidth: "100px",
+	defalutHeight: "100px",
+	dest: config.dest.icons
+}));
+
 // default build task
 gulp.task('default', function () {
 
@@ -122,11 +159,13 @@ gulp.task('default', function () {
 		'scripts', 
 		'styles', 
 		'images',
+		'fonts',
 		'modernizr'
 	];
 
 	// run build
 	runSequence(tasks, function () {
+		// gulp.start('gulpicon');
 		if (config.dev) {
 			gulp.start('browser-sync');
 		}
