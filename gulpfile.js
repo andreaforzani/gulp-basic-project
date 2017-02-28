@@ -20,6 +20,7 @@ var uglify = require('gulp-uglify');
 var gulpicon = require("gulpicon/tasks/gulpicon");
 var svgmin = require('gulp-svgmin');
 var merge = require('merge-stream');
+var shell = require('gulp-shell');
 
 var config = {
 	dev: gutil.env.dev,
@@ -92,7 +93,7 @@ gulp.task('serve', ['watch'], function() {
 	//   'css/style.css',
 	//   'js/*js',
 	//   'img/**/*',
-	//   'templates/*.twig'
+	  // 'templates/*.twig'  // compare with watch task
  //  ];
 
  //  //initialize browsersync
@@ -127,14 +128,30 @@ gulp.task('images', function () {
 		.pipe(gulp.dest(config.dest.images));
 });
 
+gulp.task('reload', ['clearcache'], function () {
+  browserSync.reload();
+});
+
 gulp.task('watch', function () {
 	gulp.watch(config.src.styles + "**/*.scss", ['styles']);
 
-	gulp.task('scripts:watch', ['scripts'], reload);
+	// gulp.task('scripts:watch', ['scripts'], reload);
+	// gulp.watch(config.src.scripts + "**/*.js", ['scripts']);
+	
+	// gulp.task('images:watch', ['images'], reload);
+	// gulp.watch(config.src.images + '**/*', ['images:watch']);
+
 	gulp.watch(config.src.scripts + "**/*.js", ['scripts']);
 	
-	gulp.task('images:watch', ['images'], reload);
-	gulp.watch(config.src.images + '**/*', ['images:watch']);
+	gulp.watch(config.src.images + '**/*', ['images']);
+
+	gulp.watch('**/*.html',['reload']);
+
+	// Drupal 7
+	// gulp.watch('**/*.{php,inc,info,module}',['reload']);
+	
+	// Drupal 8
+	// gulp.watch('./**/*.html.twig',['reload']);
 });
 
 gulp.task('fonts', function() {
