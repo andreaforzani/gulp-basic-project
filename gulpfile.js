@@ -24,7 +24,6 @@ var shell = require('gulp-shell');
 
 var config = {
 	dev: gutil.env.dev,
-	sourcemaps: (gutil.env.sourcemaps || gutil.env.dev) ? true : false,
 	src: {
 		styles : 'src/scss/',
 		scripts: 'src/js/',
@@ -62,19 +61,19 @@ gulp.task('scripts', function () {
 	return b.bundle()
 		.pipe(source('main.js'))
 		.pipe(buffer())
-		.pipe(gulpif(config.sourcemaps, sourcemaps.init({loadMaps: true})))
+		.pipe(gulpif(config.dev, sourcemaps.init({loadMaps: true})))
 		.pipe(gulpif(!config.dev, uglify()))
 		.on('error', gutil.log)
-		.pipe(gulpif(config.sourcemaps, sourcemaps.write('./')))
+		.pipe(gulpif(config.dev, sourcemaps.write('./')))
 		.pipe(gulp.dest(config.dest.scripts));
 });
 
 gulp.task('styles', function () {  
 	return gulp.src(config.src.styles + "*.scss")
-		.pipe(gulpif(config.sourcemap, sourcemaps.init()))
+		.pipe(gulpif(config.dev, sourcemaps.init()))
 		.pipe(sass().on('error', sass.logError))
 		.pipe(prefix({browsers: ['last 1 version']}))
-		.pipe(gulpif(config.sourcemaps, sourcemaps.write()))
+		.pipe(gulpif(config.dev, sourcemaps.write()))
 		.pipe(gulpif(!config.dev, csso()))
 		.pipe(gulp.dest(config.dest.styles))
 		.pipe(gulpif(config.dev, reload({stream:true})));
